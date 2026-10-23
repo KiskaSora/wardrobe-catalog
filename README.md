@@ -13,5 +13,5 @@
 
 ## Credits
 
-Код каталога вынесен из Novarakk (https://github.com/0xl0cal/sillyimages — основа; гардероб по мотивам
+Код каталога вынесен из sillywardrobe3-0 (https://github.com/0xl0cal/sillyimages — основа; гардероб по мотивам
 форка delidgi). Лицензия — GPL-3.0, см. LICENSE.
