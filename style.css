@@ -515,3 +515,14 @@
 .wcat-l-tpl textarea, .wcat-l-custom textarea, .wcat-l-custom input { width: 100%; box-sizing: border-box; margin: 4px 0; }
 .wcat-l-tpl .menu_button, .wcat-l-custom .menu_button { margin: 4px 0 0; }
 .wcat-l-desc { white-space: pre-wrap; }
+
+/* окно «Внешности» на телефоне: не уезжает вверх, шапка всегда видна, внутри прокрутка */
+.wcat-l-overlay { align-items: flex-start; padding: max(env(safe-area-inset-top, 0px), 12px) 0 12px; box-sizing: border-box; }
+.wcat-l-modal { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); margin: 0 auto; }
+.wcat-l-modal .wcat-s-modal-head { flex: 0 0 auto; }
+.wcat-l-modal .wcat-l-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 600px) {
+  .wcat-l-overlay { padding-top: max(env(safe-area-inset-top, 0px), 40px); }
+  .wcat-l-modal { width: calc(100% - 16px); max-height: calc(100dvh - 56px); }
+  .wcat-l-actions .wcat-l-send { flex: 1 1 100%; }
+}
