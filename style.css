@@ -491,3 +491,27 @@
 
 .wcat-target-row { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
 .wcat-target-row select { margin: 0; }
+
+/* ── Внешности → Context Builder ── */
+.wcat-l-overlay { z-index: 100014; }
+.wcat-l-targetrow { display: flex; align-items: center; gap: 8px; padding: 6px 12px 0; font-size: 0.85em; color: var(--SmartThemeQuoteColor, #999); flex-wrap: wrap; }
+.wcat-l-targetrow .wcat-l-block { margin: 0; padding: 3px 6px; width: auto; max-width: 100%; flex: 1 1 160px; }
+.wcat-l-list { display: flex; flex-direction: column; gap: 10px; padding: 10px 12px 16px; }
+.wcat-l-card { border: 1px solid var(--SmartThemeBorderColor); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.wcat-l-card.wcat-l-in { border-color: var(--SmartThemeQuoteColor, #999); }
+.wcat-l-card.wcat-l-off { opacity: 0.7; }
+.wcat-l-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.wcat-l-name { font-size: 1.05em; }
+.wcat-l-state { font-size: 0.8em; color: var(--SmartThemeQuoteColor, #999); white-space: nowrap; }
+.wcat-l-desc { font-size: 0.85em; line-height: 1.4; opacity: 0.85; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+.wcat-l-desc.wcat-l-open { display: block; -webkit-line-clamp: unset; max-height: 40vh; overflow-y: auto; }
+.wcat-l-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.wcat-l-actions .menu_button { margin: 0; }
+.wcat-l-actions .wcat-l-send { flex: 1 1 auto; }
+.wcat-l-actions .menu_button[disabled] { opacity: 0.4; pointer-events: none; }
+
+.wcat-l-tpl, .wcat-l-custom { margin: 6px 12px 0; font-size: 0.85em; }
+.wcat-l-tpl summary, .wcat-l-custom summary { cursor: pointer; color: var(--SmartThemeQuoteColor, #999); padding: 2px 0; }
+.wcat-l-tpl textarea, .wcat-l-custom textarea, .wcat-l-custom input { width: 100%; box-sizing: border-box; margin: 4px 0; }
+.wcat-l-tpl .menu_button, .wcat-l-custom .menu_button { margin: 4px 0 0; }
+.wcat-l-desc { white-space: pre-wrap; }

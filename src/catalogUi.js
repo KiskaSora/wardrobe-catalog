@@ -47,6 +47,18 @@ async function fetchCatalog(dataUrl, cached = null, force = false) {
     return { data, notModified: false };
 }
 
+/** JSON каталога с кэшем (общий с окном каталога). */
+export async function loadCatalogJson(dataUrl, force = false) {
+    const cached = force ? null : readCache(dataUrl);
+    if (cached && Date.now() - (cached.ts || 0) < WCAT_CACHE_TTL_MS) return cached.data;
+    try {
+        return (await fetchCatalog(dataUrl, cached, force)).data;
+    } catch (e) {
+        if (cached) return cached.data;
+        throw e;
+    }
+}
+
 export async function fetchCatalogImageBlob(url) {
     const response = await fetch(url, { cache: 'force-cache' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -54,7 +66,7 @@ export async function fetchCatalogImageBlob(url) {
 }
 
 export function openWardrobeCatalog(adapters) {
-    const { catalogs, index = 0, onIndex = () => {}, addedIds, pick, quickAdd, target = () => 'bot', onTarget = () => {} } = adapters;
+    const { catalogs, index = 0, onIndex = () => {}, addedIds, pick, quickAdd, target = () => 'bot', onTarget = () => {}, openLooks = null } = adapters;
     const getTypes = () => [];
     let current = Math.min(Math.max(index, 0), Math.max(catalogs.length - 1, 0));
     let { site, data: dataUrl } = catalogUrls(catalogs[current]?.url);
@@ -70,6 +82,7 @@ export function openWardrobeCatalog(adapters) {
                 <span class="wcat-s-modal-title"><i class="fa-solid fa-globe"></i> Каталог образов </span>
                 <select class="text_pole wcat-switch" title="Какой каталог открыть">${catalogs.map((c, i) => `<option value="${i}" ${i === current ? 'selected' : ''}>${esc(c.name || c.url)}</option>`).join('')}</select>
                 <a class="wcat-s-source-link" href="${esc(site)}" target="_blank" rel="noopener" title="Открыть сайт"><i class="fa-solid fa-arrow-up-right-from-square"></i> Сайт</a>
+                ${openLooks ? '<div class="wcat-s-refresh menu_button wcat-c-looks" title="Внешности персонажей"><i class="fa-solid fa-face-smile"></i></div>' : ''}
                 <div class="wcat-s-refresh menu_button wcat-c-refresh" title="Обновить каталог"><i class="fa-solid fa-rotate"></i></div>
                 <div class="wcat-s-refresh menu_button wcat-c-close" title="Закрыть"><i class="fa-solid fa-xmark"></i></div>
             </div>
@@ -114,6 +127,7 @@ export function openWardrobeCatalog(adapters) {
         modal.addEventListener(type, event => event.stopPropagation(), { passive: true });
     }
     overlay.querySelector('.wcat-c-close').addEventListener('click', close);
+    overlay.querySelector('.wcat-c-looks')?.addEventListener('click', () => openLooks());
 
     const typeView = (key) => {
         const { suggestion, existing } = catalogResolveType(key, getTypes());

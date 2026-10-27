@@ -142,3 +142,15 @@ export function filterCatalog(outfits, { charId = '', key = '', favOnly = false 
         return true;
     });
 }
+
+/** «Внешности» с сайта-гардероба: wardrobe.json → looks: [{ id, name, desc }]. */
+export function parseLooks(data) {
+    const looks = Array.isArray(data?.looks) ? data.looks : [];
+    return looks
+        .filter(l => l && l.id)
+        .map(l => ({
+            id: String(l.id),
+            name: String(l.name || '').trim() || 'Без имени',
+            desc: String(l.desc || '').replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim(),
+        }));
+}

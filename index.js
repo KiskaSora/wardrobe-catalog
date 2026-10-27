@@ -7,6 +7,8 @@
 
 import { openWardrobeCatalog, fetchCatalogImageBlob } from './src/catalogUi.js';
 import { SW_CATALOG_DEFAULT_URL as DEFAULT_CATALOG_URL } from './src/catalog.js';
+import { openLooks } from './src/looksUi.js';
+import { DEFAULT_TEMPLATE } from './src/extblocks.js';
 import { addToWardrobe, addedFromWardrobe, wardrobeInstalled } from './src/target.js';
 
 const KEY = 'wardrobe_catalog';
@@ -20,6 +22,10 @@ const defaults = () => ({
     index: 0,
     target: 'bot',
     taken: {},
+    looksUrl: MY_SITE,
+    ebBlockName: 'nai_imagen',
+    ebBlockRef: '',
+    lookTemplate: '',
 });
 
 function ctx() { return SillyTavern.getContext(); }
@@ -36,6 +42,10 @@ function getSettings() {
     if (!Number.isInteger(s.index) || s.index < 0 || s.index >= s.catalogs.length) s.index = 0;
     if (!['bot', 'user', 'download'].includes(s.target)) s.target = 'bot';
     if (!s.taken || typeof s.taken !== 'object') s.taken = {};
+    if (typeof s.looksUrl !== 'string' || !s.looksUrl.trim()) s.looksUrl = MY_SITE;
+    if (typeof s.ebBlockName !== 'string' || !s.ebBlockName.trim()) s.ebBlockName = 'nai_imagen';
+    if (typeof s.ebBlockRef !== 'string') s.ebBlockRef = '';
+    if (typeof s.lookTemplate !== 'string') s.lookTemplate = '';
     return s;
 }
 
@@ -143,6 +153,22 @@ export function openCatalog({ side } = {}) {
         onTarget: (v) => { s.target = v; save(); },
         quickAdd: (outfit, c) => takeOutfit(outfit, c),
         pick: (outfit, c) => showDetail(outfit, c),
+        openLooks: () => openLooksWindow(),
+    });
+}
+
+// ── Внешности → Context Builder (ExtBlocks) ──
+
+export function openLooksWindow() {
+    const s = getSettings();
+    openLooks({
+        url: s.looksUrl,
+        getBlockRef: () => s.ebBlockRef,
+        getBlockName: () => s.ebBlockName,
+        onBlock: (ref) => { s.ebBlockRef = ref || ''; save(); },
+        getTemplate: () => s.lookTemplate || DEFAULT_TEMPLATE,
+        onTemplate: (text) => { s.lookTemplate = text || ''; save(); },
+        copy: copyText,
     });
 }
 
@@ -169,7 +195,19 @@ function renderSettings(root) {
                 <option value="download">Только скачать картинку и скопировать описание</option>
             </select>
         </label>
-        <small>Адрес сайта или прямая ссылка на wardrobe.json.</small>`;
+        <small>Адрес сайта или прямая ссылка на wardrobe.json.</small>
+        <hr>
+        <b><i class="fa-solid fa-face-smile"></i> Внешности персонажей</b>
+        <label class="wcat-target-row">Ссылка на сайт с внешностями:
+            <input type="text" class="text_pole wcat-looks-url" placeholder="https://…/wardrobe/">
+        </label>
+        <label class="wcat-target-row">Блок ExtBlocks (его Context Builder):
+            <input type="text" class="text_pole wcat-eb-name" placeholder="nai_imagen">
+        </label>
+        <div class="flex-container">
+            <div class="menu_button wcat-looks-open"><i class="fa-solid fa-face-smile"></i> Открыть внешности</div>
+        </div>
+        <small>Раздел «Внешности» с сайта (wardrobe.json → looks). Кнопка в окне отправляет описание в Context Builder выбранного блока.</small>`;
     root.querySelectorAll('.wcat-list-row[data-i]').forEach((row) => {
         const i = Number(row.dataset.i);
         row.querySelector('.wcat-name').addEventListener('input', e => { s.catalogs[i].name = e.target.value; save(); });
@@ -184,6 +222,13 @@ function renderSettings(root) {
     const tsel = root.querySelector('.wcat-target-set');
     tsel.value = s.target;
     tsel.addEventListener('change', e => { s.target = e.target.value; save(); });
+    const lu = root.querySelector('.wcat-looks-url');
+    lu.value = s.looksUrl;
+    lu.addEventListener('input', e => { s.looksUrl = e.target.value.trim(); save(); });
+    const en = root.querySelector('.wcat-eb-name');
+    en.value = s.ebBlockName;
+    en.addEventListener('input', e => { s.ebBlockName = e.target.value.trim(); s.ebBlockRef = ''; save(); });
+    root.querySelector('.wcat-looks-open').addEventListener('click', () => openLooksWindow());
     root.querySelector('.wcat-add').addEventListener('click', () => {
         s.catalogs.push({ name: 'Новый каталог', url: '' });
         save(); renderSettings(root);
@@ -224,12 +269,20 @@ function addMenuButton() {
     btn.innerHTML = '<div class="fa-solid fa-globe extensionsMenuExtensionButton"></div><span>Каталог образов</span>';
     btn.addEventListener('click', () => openCatalog());
     menu.appendChild(btn);
+
+    if (document.getElementById('wcat_looks_menu_button')) return;
+    const btn2 = document.createElement('div');
+    btn2.id = 'wcat_looks_menu_button';
+    btn2.className = 'list-group-item flex-container flexGap5';
+    btn2.innerHTML = '<div class="fa-solid fa-face-smile extensionsMenuExtensionButton"></div><span>Внешности персонажей</span>';
+    btn2.addEventListener('click', () => openLooksWindow());
+    menu.appendChild(btn2);
 }
 
 (function init() {
     const c = ctx();
     getSettings();
-    window.WardrobeCatalog = { open: openCatalog };
+    window.WardrobeCatalog = { open: openCatalog, openLooks: openLooksWindow };
     c.eventSource.on(c.event_types.APP_READY, () => {
         // Пункт меню добавляем независимо от панели настроек: сбой в одном не должен ломать другое.
         try { addMenuButton(); } catch (e) { console.error('[WCAT] menu button', e); }
