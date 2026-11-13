@@ -27,12 +27,12 @@ function ctx() { return SillyTavern.getContext(); }
 function save() { ctx().saveSettingsDebounced(); }
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-function getSettings() {
+function getSettings(keepEmpty = false) {
     const store = ctx().extensionSettings;
     if (!store[KEY]) store[KEY] = defaults();
     const s = store[KEY];
     if (!Array.isArray(s.catalogs)) s.catalogs = [];
-    s.catalogs = s.catalogs.filter(c => c && typeof c.url === 'string' && c.url.trim());
+    s.catalogs = s.catalogs.filter(c => c && typeof c.url === 'string' && (keepEmpty || c.url.trim()));
     if (!Number.isInteger(s.index) || s.index < 0 || s.index >= s.catalogs.length) s.index = 0;
     if (!['bot', 'user', 'download'].includes(s.target)) s.target = 'bot';
     if (!s.taken || typeof s.taken !== 'object') s.taken = {};
@@ -171,7 +171,7 @@ export function openLooksWindow() {
 // ── Настройки (список каталогов) ──
 
 function renderSettings(root) {
-    const s = getSettings();
+    const s = getSettings(true);
     const rows = s.catalogs.map((c, i) => `
         <div class="wcat-list-row" data-i="${i}">
             <input type="text" class="text_pole wcat-name" value="${esc(c.name)}" placeholder="Название">
@@ -229,9 +229,10 @@ function renderSettings(root) {
         save(); renderSettings(root);
     });
     root.querySelector('.wcat-open').addEventListener('click', () => {
-        const clean = getSettings();
-        if (clean.catalogs.some(c => !c.url.trim())) toastr.info('У одного из каталогов пустой адрес — он пропущен', 'Каталог образов');
+        const hasEmpty = s.catalogs.some(c => !c.url.trim());
+        if (hasEmpty) toastr.info('У одного из каталогов пустой адрес — он пропущен', 'Каталог образов');
         openCatalog();
+        if (hasEmpty) renderSettings(root);
     });
 }
 
