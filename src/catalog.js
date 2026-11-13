@@ -3,8 +3,6 @@
  * wardrobe.json → { chars, cats, items }. Чистая логика без DOM и SillyTavern.
  */
 
-export const SW_CATALOG_DEFAULT_URL = 'https://creepykittyuwu.github.io/wardrobe/';
-
 const SW_CATALOG_ALIASES = {
     casual: ['casual', 'everyday', 'daily', 'повседневное', 'повседневка'],
     formal: ['formal', 'evening', 'gala', 'формальное', 'вечернее'],
@@ -33,7 +31,8 @@ const SW_CATALOG_ICONS = [
 ];
 
 export function catalogUrls(rawUrl) {
-    let url = String(rawUrl || '').trim() || SW_CATALOG_DEFAULT_URL;
+    let url = String(rawUrl || '').trim();
+    if (!url) return { site: '', data: '' };
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
     if (/\.json(\?.*)?$/i.test(url)) {
         return { site: url.replace(/[^/]*\.json(\?.*)?$/i, ''), data: url };

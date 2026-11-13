@@ -3,10 +3,10 @@
 import assert from 'node:assert/strict';
 import {
     catalogUrls, catalogCategoryKey, catalogTypeSuggestion, catalogResolveType,
-    catalogOutfitName, parseCatalogData, filterCatalog, SW_CATALOG_DEFAULT_URL,
+    catalogOutfitName, parseCatalogData, filterCatalog,
 } from '../src/catalog.js';
 
-assert.deepEqual(catalogUrls(''), { site: SW_CATALOG_DEFAULT_URL, data: SW_CATALOG_DEFAULT_URL + 'wardrobe.json' });
+assert.deepEqual(catalogUrls(''), { site: '', data: '' });
 assert.deepEqual(catalogUrls('example.github.io/w'), { site: 'https://example.github.io/w/', data: 'https://example.github.io/w/wardrobe.json' });
 assert.deepEqual(catalogUrls('https://x.io/a/index.html?q=1'), { site: 'https://x.io/a/', data: 'https://x.io/a/wardrobe.json' });
 assert.deepEqual(catalogUrls('https://x.io/a/data.json'), { site: 'https://x.io/a/', data: 'https://x.io/a/data.json' });

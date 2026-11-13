@@ -6,23 +6,18 @@
  */
 
 import { openWardrobeCatalog, fetchCatalogImageBlob } from './src/catalogUi.js';
-import { SW_CATALOG_DEFAULT_URL as DEFAULT_CATALOG_URL } from './src/catalog.js';
 import { openLooks } from './src/looksUi.js';
 import { DEFAULT_TEMPLATE } from './src/extblocks.js';
 import { addToWardrobe, addedFromWardrobe, wardrobeInstalled } from './src/target.js';
 
 const KEY = 'wardrobe_catalog';
-const MY_SITE = 'https://kiskasora.github.io/wardrobe/';
 
 const defaults = () => ({
-    catalogs: [
-        { name: 'Мой гардероб', url: MY_SITE },
-        { name: 'Каталог Ниэль', url: DEFAULT_CATALOG_URL },
-    ],
+    catalogs: [],
     index: 0,
     target: 'bot',
     taken: {},
-    looksUrl: MY_SITE,
+    looksUrl: '',
     ebBlockName: 'nai_imagen',
     ebBlockRef: '',
     lookTemplate: '',
@@ -36,13 +31,12 @@ function getSettings() {
     const store = ctx().extensionSettings;
     if (!store[KEY]) store[KEY] = defaults();
     const s = store[KEY];
-    if (!Array.isArray(s.catalogs) || !s.catalogs.length) s.catalogs = defaults().catalogs;
+    if (!Array.isArray(s.catalogs)) s.catalogs = [];
     s.catalogs = s.catalogs.filter(c => c && typeof c.url === 'string' && c.url.trim());
-    if (!s.catalogs.length) s.catalogs = defaults().catalogs;
     if (!Number.isInteger(s.index) || s.index < 0 || s.index >= s.catalogs.length) s.index = 0;
     if (!['bot', 'user', 'download'].includes(s.target)) s.target = 'bot';
     if (!s.taken || typeof s.taken !== 'object') s.taken = {};
-    if (typeof s.looksUrl !== 'string' || !s.looksUrl.trim()) s.looksUrl = MY_SITE;
+    if (typeof s.looksUrl !== 'string') s.looksUrl = '';
     if (typeof s.ebBlockName !== 'string' || !s.ebBlockName.trim()) s.ebBlockName = 'nai_imagen';
     if (typeof s.ebBlockRef !== 'string') s.ebBlockRef = '';
     if (typeof s.lookTemplate !== 'string') s.lookTemplate = '';
@@ -144,6 +138,7 @@ function showDetail(outfit, c) {
 export function openCatalog({ side } = {}) {
     const s = getSettings();
     if (side === 'bot' || side === 'user') { s.target = side; save(); }
+    if (!s.catalogs.length) { toastr.info('Добавь адрес каталога в Расширения → «Каталог образов»', 'Каталог образов'); return; }
     openWardrobeCatalog({
         catalogs: s.catalogs,
         index: s.index,
@@ -161,6 +156,7 @@ export function openCatalog({ side } = {}) {
 
 export function openLooksWindow() {
     const s = getSettings();
+    if (!s.looksUrl.trim()) { toastr.info('Укажи ссылку на сайт с внешностями в Расширения → «Каталог образов»', 'Каталог образов'); return; }
     openLooks({
         url: s.looksUrl,
         getBlockRef: () => s.ebBlockRef,
@@ -213,7 +209,6 @@ function renderSettings(root) {
         row.querySelector('.wcat-name').addEventListener('input', e => { s.catalogs[i].name = e.target.value; save(); });
         row.querySelector('.wcat-url').addEventListener('input', e => { s.catalogs[i].url = e.target.value.trim(); save(); });
         row.querySelector('.wcat-del').addEventListener('click', () => {
-            if (s.catalogs.length <= 1) { toastr.info('Нужен хотя бы один каталог', 'Каталог образов'); return; }
             s.catalogs.splice(i, 1);
             if (s.index >= s.catalogs.length) s.index = 0;
             save(); renderSettings(root);
